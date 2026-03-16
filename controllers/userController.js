@@ -1,5 +1,5 @@
 const promoteUser = async (req, res) => {
-    if (!req?.body?.id) return res.status(400).json({'message': 'An id is required'});
+    if (!req?.params?.id) return res.status(400).json({'message': 'An id is required'});
 
     try {
         const query = await sql`UPDATE users SET role = 'Admin' WHERE user_id = ${id} RETURNING *`;
@@ -10,7 +10,7 @@ const promoteUser = async (req, res) => {
 }
 
 const deleteUser = async (req, res) => {
-    if (!req?.body?.id) return res.status(400).json({'message': 'An id is required'});
+    if (!req?.params?.id) return res.status(400).json({'message': 'An id is required'});
 
     try {
         const query = await sql`DELETE FROM users WHERE user_id = ${id} RETURNING *`;
@@ -20,3 +20,4 @@ const deleteUser = async (req, res) => {
     }
 }
 
+module.exports = {promoteUser, deleteUser};
