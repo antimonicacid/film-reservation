@@ -19,9 +19,9 @@ const addFilm = async (req, res) => {
 
         return res.status(201).json({'message': `New film ${title} created`});
     } catch (err) {
-        return res.status(500).json({'message': err.message});
+        return res.status(500).json({'message': 'An internal server error occured'});
     } 
-}
+};
 
 const deleteFilm = async (req, res) => {
     if (!req?.params?.id) return req.status(400).json({'message': 'An id is required'});
@@ -36,9 +36,9 @@ const deleteFilm = async (req, res) => {
 
         return res.sendStatus(204);
     } catch (err) {
-        return res.status(500).json({'message': err.message});
+        return res.status(500).json({'message': 'An internal server error occured'});
     }
-}
+};
 
 const modifyFilm = async (req, res) => {
     if (!req?.params?.id) return req.status(400).json({'message': 'An id is required'});
@@ -61,9 +61,9 @@ const modifyFilm = async (req, res) => {
         const result = await sql.unsafe(query);
         return res.status(200).json(result);
     } catch (err) {
-        return res.status(500).json({'message': err.message});
+        return res.status(500).json({'message': 'An internal server error occured'});
     }
-}
+};
 
 const queryFilms = async (req, res) => {
     const genre = (!req.body?.genre) ? "%" : "%" + req.body.genre + "%";
@@ -73,9 +73,9 @@ const queryFilms = async (req, res) => {
         const result = await sql`SELECT title, description, image FROM films WHERE genre LIKE ${genre} AND title LIKE ${title}`;
         return res.status(200).json(result);
     } catch (err) {
-        return res.status(500).json({'message': err.message});
+        return res.status(500).json({'message': 'An internal server error occured'});
     }
-}
+};
 
 module.exports = {addFilm, deleteFilm, modifyFilm, queryFilms};
 

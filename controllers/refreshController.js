@@ -27,7 +27,7 @@ const handleRefreshToken = async (req, res) => {
             res.json({ accessToken });
             return res;
         }
-    )
-}
+    );
+};
 
 module.exports = {handleRefreshToken};

@@ -16,15 +16,14 @@ const verifyJWT = (req, res, next) => {
             if (err) return res.sendStatus(403);
             try {
                 const query = await sql`SELECT * FROM users WHERE id = ${decoded.UserInfo.id}`;
+                if (query.length === 0) return res.status(401).json({'message': "User no longer exists"});
                 req.user = query[0];
                 next();
             } catch (err) {
-                return res.status(500).json({'message': err.message})
+                return res.status(500).json({'message': 'An internal server error occured'});
             }
-            
-            
         }
-    )
-}
+    );
+};
 
 module.exports = verifyJWT;

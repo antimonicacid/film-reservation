@@ -17,29 +17,29 @@ const verifyUser = async (req, res) => {
         if (!match) return res.sendStatus(401);
 
         const accessToken = jwt.sign(
-            { "UserInfo": {
+            {"UserInfo": {
                 "id": foundUser[0].id
                 }
             },
             process.env.ACCESS_TOKEN_SECRET,
-            { expiresIn: '1h' }
+            {expiresIn: '1h'}
         );
         const refreshToken = jwt.sign(
-            { "id": foundUser[0].id },
+            {"id": foundUser[0].id },
             process.env.REFRESH_TOKEN_SECRET,
-            { expiresIn: '7d' }
+            {expiresIn: '7d'}
         );
 
         await sql`UPDATE users SET refresh_token = ${refreshToken} WHERE id = ${foundUser[0].id}`
 
-        res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'None', maxAge: 7 * 24 * 60 * 60 * 1000 }); // set secure: true
+        res.cookie('jwt', refreshToken, { httpOnly: true, sameSite: 'None', maxAge: 7 * 24 * 60 * 60 * 1000, secure: true }); // set secure: true
         res.json({ accessToken });
 
         return res;
     } catch (err) {
-        console.error(err)
-        return res.status(500).json({'message': err.message});
+        console.error(err);
+        return res.status(500).json({'message': 'An internal server error occurred'});
     }
-}
+};
 
 module.exports = {verifyUser};

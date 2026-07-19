@@ -27,9 +27,9 @@ const addShow = async (req, res) => {
 
         return res.status(201).json({'message': `New show for film ${foundFilm[0].title} created`});
     } catch (err) {
-        return res.status(500).json({'message': err.message});
+        return res.status(500).json({'message': 'An internal server error occured'});
     } 
-}
+};
 
 const modifyShow = async (req, res) => {
     if (!req?.params?.id) return req.status(400).json({'message': 'An id is required'});
@@ -54,7 +54,7 @@ const modifyShow = async (req, res) => {
     } catch (err) {
         return res.status(500).json({'message': err.message});
     }
-}
+};
 
 const deleteShow = async (req, res) => {
     if (!req?.params?.id) return req.status(400).json({'message': 'An id is required'});
@@ -69,61 +69,77 @@ const deleteShow = async (req, res) => {
 
         return res.sendStatus(204);
     } catch (err) {
-        return res.status(500).json({'message': err.message});
+        return res.status(500).json({'message': 'An internal server error occured'});
     }
-}
+};
 
 const queryShowStats = async (req, res) => {
-     let query;
-
-     if (req?.body?.startDate) {
-        const startDate = req.body.startDate;
-        const endDate = (!req?.body?.endDate) ? lightFormat(new Date('9999-01-01'), 'yyyy-MM-dd') : req.body.endDate;
-
-        if (!isValid(new Date(startDate)) || !isValid(new Date(endDate))) return res.status(400).json({'message': 'Invalid date provided'});
-
-        query = `SELECT shows.id AS show_id, shows.capacity, shows.price, shows.price * COUNT(show_id) AS revenue, films.id AS film_id, films.title, films.description, films.image FROM bookings, shows, films WHERE bookings.show_id = shows.id AND shows.film_id = films.id AND date BETWEEN '${startDate}' AND '${endDate}' GROUP BY shows.id, films.id`;
-     } else {
-        const onDate = (!req.body?.onDate) ? lightFormat(new Date(), 'yyyy-MM-dd') : req.body.onDate;
-        console.log(onDate)
-        if (!isValid(new Date(onDate))) return res.status(400).json({'message': 'Invalid date provided'});
-
-        query = `SELECT shows.id AS show_id, shows.capacity, shows.price, shows.price * COUNT(show_id) AS revenue, films.id AS film_id, films.title, films.description, films.image FROM bookings, shows, films WHERE bookings.show_id = shows.id AND shows.film_id = films.id AND date = '${onDate}' GROUP BY shows.id, films.id`;
-     }
-
     try {
-        const result = await sql.unsafe(query);
+        let result;
+
+        if (req?.body?.startDate) {
+            const startDate = req.body.startDate;
+            const endDate = (!req?.body?.endDate) ? lightFormat(new Date('9999-01-01'), 'yyyy-MM-dd') : req.body.endDate;
+
+            if (!isValid(new Date(startDate)) || !isValid(new Date(endDate))) return res.status(400).json({'message': 'Invalid date provided'});
+
+            result = await sql`SELECT shows.id AS show_id, shows.capacity, shows.price, shows.price * COUNT(show_id) AS revenue, films.id AS film_id, films.title, films.description, films.image 
+            FROM bookings, shows, films 
+            WHERE bookings.show_id = shows.id 
+            AND shows.film_id = films.id 
+            AND date BETWEEN '${startDate}' AND '${endDate}' 
+            GROUP BY shows.id, films.id`;
+        } else {
+            const onDate = (!req.body?.onDate) ? lightFormat(new Date(), 'yyyy-MM-dd') : req.body.onDate;
+            console.log(onDate)
+            if (!isValid(new Date(onDate))) return res.status(400).json({'message': 'Invalid date provided'});
+
+            result = await sql`SELECT shows.id AS show_id, shows.capacity, shows.price, shows.price * COUNT(show_id) AS revenue, films.id AS film_id, films.title, films.description, films.image 
+            FROM bookings, shows, films 
+            WHERE bookings.show_id = shows.id 
+            AND shows.film_id = films.id AND date = '${onDate}' 
+            GROUP BY shows.id, films.id`;
+        }
         return res.status(200).json(result);
     } catch (err) {
-        return res.status(500).json({'message': err.message});
+        return res.status(500).json({'message': 'An internal server error occured'});
     }
-}
+};
 
 const queryShows = async (req, res) => {
-     let query;
-
-     if (req?.body?.startDate) {
-        const startDate = req.body.startDate;
-        const endDate = (!req?.body?.endDate) ? lightFormat(new Date('9999-01-01'), 'yyyy-MM-dd') : req.body.endDate;
-
-        if (!isValid(new Date(startDate)) || !isValid(new Date(endDate))) return res.status(400).json({'message': 'Invalid date provided'});
-
-        query = `SELECT shows.capacity, shows.price, shows.date, shows.time, films.title, films.description, films.image FROM bookings, shows, films WHERE bookings.show_id = shows.id AND shows.film_id = films.id AND date BETWEEN '${startDate}' AND '${endDate}' GROUP BY shows.id, films.id`;
-     } else {
-        const onDate = (!req.body?.onDate) ? lightFormat(new Date(), 'yyyy-MM-dd') : req.body.onDate;
-        console.log(onDate)
-        if (!isValid(new Date(onDate))) return res.status(400).json({'message': 'Invalid date provided'});
-
-        query = `SELECT shows.capacity, shows.price, shows.date, shows.time, films.title, films.description, films.image FROM bookings, shows, films WHERE bookings.show_id = shows.id AND shows.film_id = films.id AND date = '${onDate}' GROUP BY shows.id, films.id`;
-     }
-
     try {
-        const result = await sql.unsafe(query);
+        let result;
+
+        if (req?.body?.startDate) {
+            const startDate = req.body.startDate;
+            const endDate = (!req?.body?.endDate) ? lightFormat(new Date('9999-01-01'), 'yyyy-MM-dd') : req.body.endDate;
+
+            if (!isValid(new Date(startDate)) || !isValid(new Date(endDate))) return res.status(400).json({'message': 'Invalid date provided'});
+
+            result = await sql`SELECT shows.capacity, shows.price, shows.date, shows.time, films.title, films.description, films.image 
+            FROM bookings, shows, films 
+            WHERE bookings.show_id = shows.id 
+            AND shows.film_id = films.id 
+            AND date BETWEEN '${startDate}' AND '${endDate}' 
+            GROUP BY shows.id, films.id`;
+
+        } else {
+            const onDate = (!req.body?.onDate) ? lightFormat(new Date(), 'yyyy-MM-dd') : req.body.onDate;
+            console.log(onDate)
+            if (!isValid(new Date(onDate))) return res.status(400).json({'message': 'Invalid date provided'});
+
+            result = await sql`SELECT shows.capacity, shows.price, shows.date, shows.time, films.title, films.description, films.image 
+            FROM bookings, shows, films 
+            WHERE bookings.show_id = shows.id 
+            AND shows.film_id = films.id 
+            AND date = '${onDate}' 
+            GROUP BY shows.id, films.id`;
+        } 
         return res.status(200).json(result);
     } catch (err) {
-        return res.status(500).json({'message': err.message});
+        return res.status(500).json({'message': 'An internal server error occured'});
     }
-}
+};
 
 
 module.exports = {addShow, modifyShow, deleteShow, queryShowStats, queryShows};

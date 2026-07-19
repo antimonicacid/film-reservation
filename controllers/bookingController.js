@@ -29,7 +29,7 @@ const reserveSeats = async (req, res) => {
     
     return res.status(200).json({'message': `User ${userId} successfully reserved seats ${seats} for show ${showId}`})
   } catch (err) {
-    return res.status(500).json({'message': err.message})
+    return res.status(500).json({'message': 'An internal server error occured'})
   }
 };
 
@@ -47,9 +47,9 @@ const deleteReservation = async (req, res) => {
 
         return res.sendStatus(204);
     } catch (err) {
-        return res.status(500).json({'message': err.message});
+        return res.status(500).json({'message': 'An internal server error occured'});
     }
-}
+};
 
 const queryUserReservations = async (req, res) => {
     if (!req?.user) return res.status(400).json({'message': 'A user is required'});
@@ -58,9 +58,9 @@ const queryUserReservations = async (req, res) => {
         const result = await sql`SELECT seat, date, time FROM bookings JOIN shows on bookings.show_id = shows.id WHERE user_id = ${user.id}`;
         return res.status(200).json(result);
     } catch (err) {
-        return res.status(500).json({'message': err.message});
+        return res.status(500).json({'message': 'An internal server error occured'});
     }
-}
+};
 
 const queryShowReservations = async (req, res) => {
     if (!req?.params?.showId) return res.status(400).json({'message': 'A showId is required'});
@@ -69,9 +69,10 @@ const queryShowReservations = async (req, res) => {
         const result = await sql`SELECT seat, user_id FROM bookings, shows WHERE bookings.show_id = shows.id AND show_id = ${req.params.showId}`;
         return res.status(200).json(result);
     } catch (err) {
-        return res.status(500).json({'message': err.message});
+        console.error(err);
+        return res.status(500).json({'message': 'An internal server error occured'});
     }
-}
+};
 
 
 module.exports = {reserveSeats, deleteReservation, queryUserReservations, queryShowReservations};

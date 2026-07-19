@@ -7,6 +7,8 @@ const bcrypt = require('bcrypt');
 const registerUser = async (req, res) => {
     const {fname, lname, email, pwd} = req.body;
 
+    console.log(fname, lname, email, pwd);
+
     if (!fname || !lname || !email || !pwd) return res.status(400).json({'message': `${handleBadRequest(fname, lname, email, pwd)}`});
 
     const duplicate = await sql`SELECT FROM users
@@ -31,10 +33,10 @@ const registerUser = async (req, res) => {
 
         return res.status(201).json({'message': `New user ${fname} ${lname} created`});
     } catch (err) {
-        return res.status(500).json({'message': err.message});
+        return res.status(500).json({'message': 'An internal server error occured'});
     } 
 
-}
+};
 
 const handleBadRequest = (fname, lname, email, pwd) => {
     let message = "Missing";
@@ -65,6 +67,6 @@ const handleBadRequest = (fname, lname, email, pwd) => {
     message += "."
 
     return message;
-}
+};
 
 module.exports = {registerUser};

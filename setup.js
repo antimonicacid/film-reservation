@@ -1,17 +1,22 @@
+require('dotenv').config();
+
 const postgres = require('postgres');
 const postgresOptions = require('./config/postgresOptions');
 const sql = postgres(postgresOptions);
 
+const bcrypt = require('bcrypt');
 
 // Create user table in DB with an admin user
 const createUserTable = async () => {
     try {
         await sql`CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
         first_name VARCHAR(50) NOT NULL,
-        last_name VARCHAR(50),
-        email VARCHAR(255) NOT NULL PRIMARY KEY,
+        last_name VARCHAR(50) NOT NULL,
+        email VARCHAR(255) NOT NULL,
         password VARCHAR(255) NOT NULL,
-        role VARCHAR(5) NOT NULL
+        role VARCHAR(5) NOT NULL,
+        refresh_token VARCHAR(255) 
         )`
 
         const duplicate = await sql`SELECT FROM users
@@ -19,11 +24,13 @@ const createUserTable = async () => {
     
         if (duplicate.length > 0) return;
 
+        const adminPassword = await bcrypt.hash('admin', 10);
+        
         const admin = {
             'first_name': 'admin',
             'last_name': '',
             'email': 'admin@admin.com',
-            'password': 'admin',
+            'password': adminPassword,
             'role': 'Admin'
         };
 
