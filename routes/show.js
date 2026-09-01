@@ -3,7 +3,8 @@ const router = express.Router();
 const showController = require('../controllers/showController');
 const verifyAdmin = require('../middleware/verifyAdmin');
 
-router.get('/', showController.queryShows)
+router.post('/query', showController.queryShows)
+    .get('/query/:id', showController.queryShowsById);
 
 router.use(verifyAdmin);
 router.post('/', showController.addShow)
