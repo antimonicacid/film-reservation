@@ -5,7 +5,7 @@ const sql = postgres(postgresOptions);
 const addFilm = async (req, res) => {
     const {title, desc, image, genre} = req.body;
 
-    if (!title || !desc || !image || !genre) return res.status(400).json({'message': 'A title, description, image and genre are required'});
+    if (!title || !desc || !genre) return res.status(400).json({'message': 'A title, description, image and genre are required'});
 
     try {
         const newFilm = {
@@ -44,22 +44,22 @@ const modifyFilm = async (req, res) => {
     if (!req?.params?.id) return req.status(400).json({'message': 'An id is required'});
     const id = req.params.id;
 
-    var query = ['UPDATE films SET ']
-    var set = [];
-
-    // If attribute to modify exists in JSON body, modify it. 
-    Object.keys(req.body).forEach((attribute) => {
-        if (attribute) {
-            set.push(attribute + ` = '${req.body[attribute]}'`)
-        }
-    });
-    
-    query += set.join(', ')
-    query += ` WHERE id = ${id} RETURNING *`;
-
     try {
+        var query = ['UPDATE films SET ']
+        var set = [];
+
+        // If attribute to modify exists in JSON body, modify it. 
+        Object.keys(req.body).forEach((attribute) => {
+            if (attribute) {
+                set.push(attribute + ` = '${req.body[attribute]}'`)
+            }
+        });
+        
+        query += set.join(', ')
+        query += ` WHERE id = ${id} RETURNING *`;
         const result = await sql.unsafe(query);
         return res.status(200).json(result);
+
     } catch (err) {
         return res.status(500).json({'message': 'An internal server error occured'});
     }
@@ -70,7 +70,7 @@ const queryFilms = async (req, res) => {
     const title = (!req.body?.title) ? "%" : "%" + req.body.title + "%";
 
     try {
-        const result = await sql`SELECT title, description, image FROM films WHERE genre LIKE ${genre} AND title LIKE ${title}`;
+        const result = await sql`SELECT * FROM films WHERE genre LIKE ${genre} AND title LIKE ${title}`;
         return res.status(200).json(result);
     } catch (err) {
         return res.status(500).json({'message': 'An internal server error occured'});
