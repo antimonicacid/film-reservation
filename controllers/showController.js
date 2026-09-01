@@ -27,7 +27,7 @@ const addShow = async (req, res) => {
 
         return res.status(201).json({'message': `New show for film ${foundFilm[0].title} created`});
     } catch (err) {
-        return res.status(500).json({'message': 'An internal server error occured'});
+        return res.status(500).json({'message': `An internal server error occured ${err}`});
     } 
 };
 
@@ -65,41 +65,30 @@ const deleteShow = async (req, res) => {
 
         if (foundShow.length === 0) return res.status(404).json({'message': 'Show not found'});
 
+        await sql`DELETE FROM bookings WHERE show_id = ${id}`
         await sql`DELETE FROM shows WHERE id = ${id}`
 
         return res.sendStatus(204);
     } catch (err) {
+        console.log(err);
         return res.status(500).json({'message': 'An internal server error occured'});
     }
 };
 
 const queryShowStats = async (req, res) => {
     try {
-        let result;
-
-        if (req?.body?.startDate) {
-            const startDate = req.body.startDate;
-            const endDate = (!req?.body?.endDate) ? lightFormat(new Date('9999-01-01'), 'yyyy-MM-dd') : req.body.endDate;
+        const startDate = req?.body?.startDate ? req.body.startDate : lightFormat(new Date(), 'yyyy-MM-dd');
+        const endDate = (!req?.body?.endDate) ? lightFormat(new Date('9999-01-01'), 'yyyy-MM-dd') : req.body.endDate;
 
             if (!isValid(new Date(startDate)) || !isValid(new Date(endDate))) return res.status(400).json({'message': 'Invalid date provided'});
 
-            result = await sql`SELECT shows.id AS show_id, shows.capacity, shows.price, shows.price * COUNT(show_id) AS revenue, films.id AS film_id, films.title, films.description, films.image 
+            const result = await sql`SELECT shows.id AS show_id, shows.capacity, shows.price, shows.price * COUNT(show_id) AS revenue, films.id AS film_id, films.title, films.description, films.image 
             FROM bookings, shows, films 
             WHERE bookings.show_id = shows.id 
             AND shows.film_id = films.id 
             AND date BETWEEN '${startDate}' AND '${endDate}' 
             GROUP BY shows.id, films.id`;
-        } else {
-            const onDate = (!req.body?.onDate) ? lightFormat(new Date(), 'yyyy-MM-dd') : req.body.onDate;
-            console.log(onDate)
-            if (!isValid(new Date(onDate))) return res.status(400).json({'message': 'Invalid date provided'});
 
-            result = await sql`SELECT shows.id AS show_id, shows.capacity, shows.price, shows.price * COUNT(show_id) AS revenue, films.id AS film_id, films.title, films.description, films.image 
-            FROM bookings, shows, films 
-            WHERE bookings.show_id = shows.id 
-            AND shows.film_id = films.id AND date = '${onDate}' 
-            GROUP BY shows.id, films.id`;
-        }
         return res.status(200).json(result);
     } catch (err) {
         return res.status(500).json({'message': 'An internal server error occured'});
@@ -108,38 +97,41 @@ const queryShowStats = async (req, res) => {
 
 const queryShows = async (req, res) => {
     try {
-        let result;
+        const startDate = req?.body?.startDate ? req.body.startDate : lightFormat(new Date(), 'yyyy-MM-dd');
+        const endDate = (!req?.body?.endDate) ? lightFormat(new Date('9999-01-01'), 'yyyy-MM-dd') : req.body.endDate;
+        const filmId = (req?.body?.filmId) ? req.body.filmId : '%';
 
-        if (req?.body?.startDate) {
-            const startDate = req.body.startDate;
-            const endDate = (!req?.body?.endDate) ? lightFormat(new Date('9999-01-01'), 'yyyy-MM-dd') : req.body.endDate;
+        if (!isValid(new Date(startDate)) || !isValid(new Date(endDate))) return res.status(400).json({'message': 'Invalid date provided'});
 
-            if (!isValid(new Date(startDate)) || !isValid(new Date(endDate))) return res.status(400).json({'message': 'Invalid date provided'});
+        const result = await sql`SELECT shows.id, shows.capacity, shows.price, shows.date, shows.time, films.title, films.description, films.image 
+        FROM shows, films 
+        WHERE shows.film_id = films.id
+        AND date BETWEEN ${startDate} AND ${endDate}
+        AND shows.film_id::varchar(12) LIKE ${filmId} 
+        GROUP BY shows.id, films.id
+        ORDER BY date ASC`;
 
-            result = await sql`SELECT shows.capacity, shows.price, shows.date, shows.time, films.title, films.description, films.image 
-            FROM bookings, shows, films 
-            WHERE bookings.show_id = shows.id 
-            AND shows.film_id = films.id 
-            AND date BETWEEN '${startDate}' AND '${endDate}' 
-            GROUP BY shows.id, films.id`;
-
-        } else {
-            const onDate = (!req.body?.onDate) ? lightFormat(new Date(), 'yyyy-MM-dd') : req.body.onDate;
-            console.log(onDate)
-            if (!isValid(new Date(onDate))) return res.status(400).json({'message': 'Invalid date provided'});
-
-            result = await sql`SELECT shows.capacity, shows.price, shows.date, shows.time, films.title, films.description, films.image 
-            FROM bookings, shows, films 
-            WHERE bookings.show_id = shows.id 
-            AND shows.film_id = films.id 
-            AND date = '${onDate}' 
-            GROUP BY shows.id, films.id`;
-        } 
         return res.status(200).json(result);
     } catch (err) {
         return res.status(500).json({'message': 'An internal server error occured'});
     }
 };
 
+const queryShowsById = async (req, res) => {
+    try {
+        if (!req?.params?.id) return req.status(400).json({'message': 'An id is required'});
+        const id = req.params.id;
+        console.log(id);
 
-module.exports = {addShow, modifyShow, deleteShow, queryShowStats, queryShows};
+        const result = await sql`SELECT shows.id, shows.capacity, shows.price, shows.date, shows.time, films.title, films.description, films.image 
+        FROM shows, films 
+        WHERE shows.id = ${id}`
+
+        return res.status(200).json(result);
+    } catch (err) {
+        return res.status(500).json({'message': 'An internal server error occured'});
+    }
+
+}
+
+module.exports = {addShow, modifyShow, deleteShow, queryShowStats, queryShows, queryShowsById};
