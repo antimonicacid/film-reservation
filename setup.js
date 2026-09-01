@@ -65,11 +65,28 @@ const createShowTable = async () => {
        await sql`CREATE TABLE IF NOT EXISTS shows (
         id SERIAL PRIMARY KEY,
         price NUMERIC(3,2) NOT NULL,
+        capacity INTEGER NOT NULL,
         date DATE,
         time TIME,
-        film_id SERIAL REFERENCES films(id)
+        film_id SERIAL REFERENCES films(id) ON DELETE CASCADE
         )`
         console.log("Created shows table");
+        return true;
+    } catch (err) {
+        console.log(err);
+        return false;
+    }
+}
+
+const createBookingTable = async () => {
+    try {
+        await sql`CREATE TABLE IF NOT EXISTS bookings (
+            id SERIAL PRIMARY KEY,
+            seat INTEGER NOT NULL,
+            user_id SERIAL REFERENCES users(id) ON DELETE CASCADE,
+            show_id SERIAL REFERENCES shows(id) ON DELETE CASCADE
+            )`
+        console.log("Created bookings table");
         return true;
     } catch (err) {
         console.log(err);
@@ -81,6 +98,7 @@ const main = async () => {
     await createUserTable();
     await createFilmTable();
     await createShowTable();
+    await createBookingTable();
 
     process.exit(0);
 }
