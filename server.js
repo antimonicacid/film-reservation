@@ -31,6 +31,7 @@ app.use("/film", require('./routes/film'));
 app.use("/show", require('./routes/show'));
 app.use("/booking", require('./routes/booking'));
 app.use("/user", require('./routes/user'));
+app.use("/verifyadmin", require('./routes/verifyAdmin'));
 
 
 app.listen(PORT, () => {
