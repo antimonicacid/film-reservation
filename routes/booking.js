@@ -5,7 +5,8 @@ const verifyAdmin = require('../middleware/verifyAdmin');
 
 router.post('/', bookingController.reserveSeats)
     .delete('/', bookingController.deleteReservation)
-    .get('/', bookingController.queryUserReservations);
+    .get('/', bookingController.queryUserReservations)
+    .get('/:showId', bookingController.queryBookedSeats);
 
 
 router.use(verifyAdmin);
